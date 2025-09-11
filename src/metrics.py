@@ -43,3 +43,32 @@ def cvar(returns, alpha=0.95):
         
     var = returns.quantile(1 - alpha)
     return returns[returns <= var].mean()
+
+def sharpe_ratio(returns, risk_free=0):
+    """Sharpe ratio: excess return / total risk."""
+    if not isinstance(returns, pd.Series):
+        returns = pd.Series(returns)
+    excess = returns - risk_free/12  # monthly adjustment
+    return (excess.mean() * 12) / (excess.std() * np.sqrt(12))
+
+def treynor_ratio(returns, benchmark, risk_free=0):
+    """Treynor ratio: excess return / beta."""
+    if not isinstance(returns, pd.Series):
+        returns = pd.Series(returns)
+    if not isinstance(benchmark, pd.Series):
+        benchmark = pd.Series(benchmark)
+    excess = returns - risk_free/12
+    bench_excess = benchmark - risk_free/12
+    cov = np.cov(excess, bench_excess)[0, 1]
+    var_bench = np.var(bench_excess)
+    beta = cov / var_bench if var_bench != 0 else np.nan
+    return (excess.mean() * 12) / beta if beta != 0 else np.nan
+
+def information_ratio(returns, benchmark):
+    """Information ratio: active return / active risk."""
+    if not isinstance(returns, pd.Series):
+        returns = pd.Series(returns)
+    if not isinstance(benchmark, pd.Series):
+        benchmark = pd.Series(benchmark)
+    active = returns - benchmark
+    return (active.mean() * 12) / (active.std() * np.sqrt(12))
